@@ -3,8 +3,7 @@ package ru.hzerr;
 import org.apache.commons.io.FileUtils;
 import ru.hzerr.exception.ValidationException;
 import ru.hzerr.exception.directory.HDirectoryNotFoundException;
-import ru.hzerr.exception.file.HFileException;
-import ru.hzerr.exception.file.HFileNotFoundException;
+import ru.hzerr.exception.file.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,24 +34,33 @@ public class HFile {
         validate();
     }
 
-    public String getName() { return this.file.getName(); }
+    public String getFileName() { return this.file.getName(); }
 
-    public void create() throws IOException {
+    public void create() throws HFileIsNotFileException, HFileCreationFailedException, HFileCreateImpossibleException {
         if (file.exists()) {
             if (file.isDirectory()) {
-                throw new HFileException("File " + file + " exists and is not a file. Unable to create file.");
+                throw new HFileIsNotFileException("File " + file + " exists and is not a file. Unable to create file.");
             }
-        } else if (!file.createNewFile()) {
-            // Double-check that some other thread or process hasn't made
-            // the file in the background
-            if (file.isDirectory()) {
-                throw new HFileException("Unable to create file " + file);
+        } else {
+            boolean created;
+            try {
+                created = file.createNewFile();
+            } catch (IOException io) { throw new HFileCreationFailedException(io.getMessage()); }
+            if (!created) {
+                // Double-check that some other thread or process hasn't made
+                // the file in the background
+                if (file.isDirectory()) {
+                    throw new HFileCreateImpossibleException("Unable to create file " + file);
+                }
             }
         }
         validate();
     }
 
-    public void delete() throws IOException { FileUtils.forceDelete(file); }
+    public void delete() throws IOException {
+        checkExists(this);
+        FileUtils.forceDelete(file);
+    }
 
     public void copyToFile(HFile file) throws IOException {
         checkExists(file, this);
@@ -78,6 +86,9 @@ public class HFile {
 
     public boolean exists() { return file.exists(); }
     public boolean notExists() { return !file.exists(); }
+
+    @Override
+    public String toString() { return file.getAbsolutePath(); }
 
     private void validate() throws ValidationException {
         if (file.isDirectory())

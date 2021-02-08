@@ -3,9 +3,11 @@ package ru.hzerr;
 import org.apache.commons.io.FileUtils;
 import ru.hzerr.exception.ValidationException;
 import ru.hzerr.exception.directory.HDirectoryCreateImpossibleException;
-import ru.hzerr.exception.directory.HDirectoryException;
 import ru.hzerr.exception.directory.HDirectoryIsNotDirectoryException;
 import ru.hzerr.exception.directory.HDirectoryNotFoundException;
+import ru.hzerr.exception.file.HFileCreateImpossibleException;
+import ru.hzerr.exception.file.HFileCreationFailedException;
+import ru.hzerr.exception.file.HFileIsNotFileException;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +38,7 @@ public class HDirectory {
         validate();
     }
 
-    public void create() throws HDirectoryException {
+    public void create() throws HDirectoryIsNotDirectoryException, HDirectoryCreateImpossibleException {
         if (directory.exists()) {
             if (directory.isFile()) {
                 throw new HDirectoryIsNotDirectoryException("File " + directory + " exists and is not a directory. Unable to create directory.");
@@ -50,13 +52,15 @@ public class HDirectory {
         }
     }
 
-    public HDirectory createSubDirectory(String dirName) throws IOException {
+    public String getDirectoryName() { return this.directory.getName(); }
+
+    public HDirectory createSubDirectory(String dirName) throws HDirectoryIsNotDirectoryException, HDirectoryCreateImpossibleException {
         HDirectory subDirectory =  new HDirectory(this, dirName);
         subDirectory.create();
         return subDirectory;
     }
 
-    public HFile createSubFile(String fileName) throws IOException {
+    public HFile createSubFile(String fileName) throws HFileIsNotFileException, HFileCreationFailedException, HFileCreateImpossibleException {
         HFile subFile = new HFile(this, fileName);
         subFile.create();
         return subFile;
