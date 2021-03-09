@@ -1,6 +1,9 @@
 package ru.hzerr;
 
 import org.apache.commons.io.FileUtils;
+import ru.hzerr.collections.HCollectors;
+import ru.hzerr.collections.list.ArrayHList;
+import ru.hzerr.collections.list.HList;
 import ru.hzerr.exception.ValidationException;
 import ru.hzerr.exception.directory.HDirectoryCreateImpossibleException;
 import ru.hzerr.exception.directory.HDirectoryIsNotDirectoryException;
@@ -11,7 +14,11 @@ import ru.hzerr.exception.file.HFileIsNotFileException;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Objects;
 
 public class HDirectory {
@@ -69,6 +76,39 @@ public class HDirectory {
     public HDirectory getSubDirectory(String dirName) { return new HDirectory(this, dirName); }
     public HFile getSubFile(String fileName) { return new HFile(this, fileName); }
 
+    public HList<HFile> getFiles() {
+        File[] files = this.directory.listFiles();
+        if (files != null) {
+            HList<HFile> subFiles = new ArrayHList<>();
+            for (File file: files) {
+                if (file.isFile()) {
+                    subFiles.add(new HFile(file.getAbsolutePath()));
+                }
+            }
+            return subFiles;
+        } else return null;
+    }
+
+    public HList<HDirectory> getDirectories() {
+        File[] files = this.directory.listFiles();
+        if (files != null) {
+            HList<HDirectory> subFiles = new ArrayHList<>();
+            for (File file: files) {
+                if (file.isDirectory()) {
+                    subFiles.add(new HDirectory(file.getAbsolutePath()));
+                }
+            }
+            return subFiles;
+        } else return null;
+    }
+
+    public HList<FSObject> getFiles(boolean recursive) throws IOException {
+        if (recursive) {
+            return walk().map(FSObject::new).collect(HCollectors.toHList());
+        } else
+            return ArrayHList.create(directory.listFiles()).map(FSObject::new);
+    }
+
     public boolean exists() { return this.directory.exists(); }
     public boolean notExists() { return !this.directory.exists(); }
 
@@ -98,6 +138,11 @@ public class HDirectory {
         FileUtils.moveDirectory(this.directory, directory.directory);
     }
 
+    public double sizeOf(SizeType type) {
+        BigDecimal size = new BigDecimal(FileUtils.sizeOfDirectoryAsBigInteger(directory));
+        return SizeType.BYTE.to(type, size).setScale(1, RoundingMode.DOWN).doubleValue();
+    }
+
     @Override
     public String toString() { return directory.getAbsolutePath(); }
 
@@ -112,5 +157,9 @@ public class HDirectory {
             if (directory.notExists())
                 throw new HDirectoryNotFoundException("Directory does not exist: " + directory);
         }
+    }
+
+    private HStream<Path> walk() throws IOException {
+        return HStream.of(Files.walk(directory.toPath()));
     }
 }
