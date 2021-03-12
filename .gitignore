@@ -1,4 +1,10 @@
 # Project exclude paths
 /out/
 .idea
+.gradle
 src/test
+build/classes
+build/generated
+build/libs
+build/tmp
+HFile.iml

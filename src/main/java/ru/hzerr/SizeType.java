@@ -12,68 +12,70 @@ public enum SizeType {
     TB,
     PB;
 
-    public BigInteger toByte(BigInteger size) {
+    private static final BigDecimal BINARY_THOUSAND = BigDecimal.valueOf(1024);
+
+    public BigDecimal toByte(BigDecimal size) {
         return switch (this) {
             case BYTE -> size;
-            case KB -> size.multiply(BigInteger.valueOf(1024));
-            case MB -> size.multiply(BigInteger.valueOf(1024 * 2));
-            case GB -> size.multiply(BigInteger.valueOf(1024 * 3));
-            case TB -> size.multiply(BigInteger.valueOf(1024 * 4));
-            case PB -> size.multiply(BigInteger.valueOf(1024 * 5));
+            case KB -> multiply(size, 1);
+            case MB -> multiply(size, 2);
+            case GB -> multiply(size, 3);
+            case TB -> multiply(size, 4);
+            case PB -> multiply(size, 5);
         };
     }
 
-    public BigInteger toKb(BigInteger size) {
+    public BigDecimal toKb(BigDecimal size) {
         return switch (this) {
-            case BYTE -> size.divide(BigInteger.valueOf(1024));
+            case BYTE -> divide(size, 1);
             case KB -> size;
-            case MB -> size.multiply(BigInteger.valueOf(1024));
-            case GB -> size.multiply(BigInteger.valueOf(1024 * 2));
-            case TB -> size.multiply(BigInteger.valueOf(1024 * 3));
-            case PB -> size.multiply(BigInteger.valueOf(1024 * 4));
+            case MB -> multiply(size, 1);
+            case GB -> multiply(size, 2);
+            case TB -> multiply(size, 3);
+            case PB -> multiply(size, 4);
         };
     }
 
-    public BigInteger toMb(BigInteger size) {
+    public BigDecimal toMb(BigDecimal size) {
         return switch (this) {
-            case BYTE -> size.divide(BigInteger.valueOf(1024 * 2));
-            case KB -> size.divide(BigInteger.valueOf(1024));
+            case BYTE -> divide(size, 2);
+            case KB -> divide(size, 1);
             case MB -> size;
-            case GB -> size.multiply(BigInteger.valueOf(1024));
-            case TB -> size.multiply(BigInteger.valueOf(1024 * 2));
-            case PB -> size.multiply(BigInteger.valueOf(1024 * 3));
+            case GB -> multiply(size, 1);
+            case TB -> multiply(size, 2);
+            case PB -> multiply(size, 3);
         };
     }
 
-    public BigInteger toGb(BigInteger size) {
+    public BigDecimal toGb(BigDecimal size) {
         return switch (this) {
-            case BYTE -> size.divide(BigInteger.valueOf(1024 * 3));
-            case KB -> size.divide(BigInteger.valueOf(1024 * 2));
-            case MB -> size.divide(BigInteger.valueOf(1024));
+            case BYTE -> divide(size, 3);
+            case KB -> divide(size, 2);
+            case MB -> divide(size, 1);
             case GB -> size;
-            case TB -> size.multiply(BigInteger.valueOf(1024));
-            case PB -> size.multiply(BigInteger.valueOf(1024 * 2));
+            case TB -> multiply(size, 1);
+            case PB -> multiply(size, 2);
         };
     }
 
-    public BigInteger toTb(BigInteger size) {
+    public BigDecimal toTb(BigDecimal size) {
         return switch (this) {
-            case BYTE -> size.divide(BigInteger.valueOf(1024 * 4));
-            case KB -> size.divide(BigInteger.valueOf(1024 * 3));
-            case MB -> size.divide(BigInteger.valueOf(1024 * 2));
-            case GB -> size.divide(BigInteger.valueOf(1024));
+            case BYTE -> divide(size, 4);
+            case KB -> divide(size, 3);
+            case MB -> divide(size, 2);
+            case GB -> divide(size, 1);
             case TB -> size;
-            case PB -> size.multiply(BigInteger.valueOf(1024));
+            case PB -> multiply(size, 1);
         };
     }
 
-    public BigInteger toPb(BigInteger size) {
+    public BigDecimal toPb(BigDecimal size) {
         return switch (this) {
-            case BYTE -> size.divide(BigInteger.valueOf(1024 * 5));
-            case KB -> size.divide(BigInteger.valueOf(1024 * 4));
-            case MB -> size.divide(BigInteger.valueOf(1024 * 3));
-            case GB -> size.divide(BigInteger.valueOf(1024 * 2));
-            case TB -> size.divide(BigInteger.valueOf(1024));
+            case BYTE -> divide(size, 5);
+            case KB -> divide(size, 4);
+            case MB -> divide(size, 3);
+            case GB -> divide(size, 2);
+            case TB -> divide(size, 1);
             case PB -> size;
         };
     }
@@ -83,52 +85,68 @@ public enum SizeType {
         return switch (this) {
             case BYTE -> switch (type) {
                 case BYTE -> size;
-                case KB -> size.divide(BigDecimal.valueOf(1024));
-                case MB -> size.divide(BigDecimal.valueOf(1024 * 2));
-                case GB -> size.divide(BigDecimal.valueOf(1024 * 3));
-                case TB -> size.divide(BigDecimal.valueOf(1024 * 4));
-                case PB -> size.divide(BigDecimal.valueOf(1024 * 5));
+                case KB -> divide(size, 1);
+                case MB -> divide(size, 2);
+                case GB -> divide(size, 3);
+                case TB -> divide(size, 4);
+                case PB -> divide(size, 5);
             };
             case KB -> switch (type) {
-                case BYTE -> size.multiply(BigDecimal.valueOf(1024));
+                case BYTE -> multiply(size, 1);
                 case KB -> size;
-                case MB -> size.divide(BigDecimal.valueOf(1024));
-                case GB -> size.divide(BigDecimal.valueOf(1024 * 2));
-                case TB -> size.divide(BigDecimal.valueOf(1024 * 3));
-                case PB -> size.divide(BigDecimal.valueOf(1024 * 4));
+                case MB -> divide(size, 1);
+                case GB -> divide(size, 2);
+                case TB -> divide(size, 3);
+                case PB -> divide(size, 4);
             };
             case MB -> switch (type) {
-                case BYTE -> size.multiply(BigDecimal.valueOf(1024 * 2));
-                case KB -> size.multiply(BigDecimal.valueOf(1024));
+                case BYTE -> multiply(size, 2);
+                case KB -> multiply(size, 1);
                 case MB -> size;
-                case GB -> size.divide(BigDecimal.valueOf(1024));
-                case TB -> size.divide(BigDecimal.valueOf(1024 * 2));
-                case PB -> size.divide(BigDecimal.valueOf(1024 * 3));
+                case GB -> divide(size, 1);
+                case TB -> divide(size, 2);
+                case PB -> divide(size, 3);
             };
             case GB -> switch (type) {
-                case BYTE -> size.multiply(BigDecimal.valueOf(1024 * 3));
-                case KB -> size.multiply(BigDecimal.valueOf(1024 * 2));
-                case MB -> size.multiply(BigDecimal.valueOf(1024));
+                case BYTE -> multiply(size, 3);
+                case KB -> multiply(size, 2);
+                case MB -> multiply(size, 1);
                 case GB -> size;
-                case TB -> size.divide(BigDecimal.valueOf(1024));
-                case PB -> size.divide(BigDecimal.valueOf(1024 * 2));
+                case TB -> divide(size, 1);
+                case PB -> divide(size, 2);
             };
             case TB -> switch (type) {
-                case BYTE -> size.multiply(BigDecimal.valueOf(1024 * 4));
-                case KB -> size.multiply(BigDecimal.valueOf(1024 * 3));
-                case MB -> size.multiply(BigDecimal.valueOf(1024 * 2));
-                case GB -> size.multiply(BigDecimal.valueOf(1024));
+                case BYTE -> multiply(size, 4);
+                case KB -> multiply(size, 3);
+                case MB -> multiply(size, 2);
+                case GB -> multiply(size, 1);
                 case TB -> size;
-                case PB -> size.divide(BigDecimal.valueOf(1024));
+                case PB -> divide(size, 1);
             };
             case PB -> switch (type) {
-                case BYTE -> size.multiply(BigDecimal.valueOf(1024 * 5));
-                case KB -> size.multiply(BigDecimal.valueOf(1024 * 4));
-                case MB -> size.multiply(BigDecimal.valueOf(1024 * 3));
-                case GB -> size.multiply(BigDecimal.valueOf(1024 * 2));
-                case TB -> size.multiply(BigDecimal.valueOf(1024));
+                case BYTE -> multiply(size, 5);
+                case KB -> multiply(size, 4);
+                case MB -> multiply(size, 3);
+                case GB -> multiply(size, 2);
+                case TB -> multiply(size, 1);
                 case PB -> size;
             };
         };
+    }
+
+    private BigDecimal multiply(BigDecimal decimal, int count) {
+        for (int i = 0; i < count; i++) {
+            decimal = decimal.multiply(BINARY_THOUSAND);
+        }
+
+        return decimal;
+    }
+
+    private BigDecimal divide(BigDecimal decimal, int count) {
+        for (int i = 0; i < count; i++) {
+            decimal = decimal.divide(BINARY_THOUSAND);
+        }
+
+        return decimal;
     }
 }
