@@ -11,11 +11,13 @@ import ru.hzerr.exception.directory.HDirectoryNotFoundException;
 import ru.hzerr.exception.file.HFileCreateImpossibleException;
 import ru.hzerr.exception.file.HFileCreationFailedException;
 import ru.hzerr.exception.file.HFileIsNotFileException;
+import ru.hzerr.stream.HStream;
+import ru.hzerr.stream.bi.DoubleHStream;
+import ru.hzerr.stream.bi.DoubleHStreamBuilder;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.nio.file.Files;
@@ -103,11 +105,32 @@ public class HDirectory {
         } else return null;
     }
 
-    public HList<FSObject> getFiles(boolean recursive) throws IOException {
+    public DoubleHStream<HDirectory, HFile> getFiles(boolean recursive) throws IOException {
         if (recursive) {
-            return walk().map(FSObject::new).collect(HCollectors.toHList());
-        } else
-            return ArrayHList.create(directory.listFiles()).map(FSObject::new);
+            HList<FSObject> objects = walk().map(FSObject::new).collect(HCollectors.toHList());
+            HList<HDirectory> directories = new ArrayHList<>();
+            HList<HFile> files = new ArrayHList<>();
+            for (FSObject object : objects) {
+                if (object.isDirectory()) {
+                    directories.add(object.getDirectory());
+                } else
+                    files.add(object.getFile());
+            }
+            return DoubleHStreamBuilder.create(HDirectory.class, HFile.class)
+                    .of(directories.toHStream(), files.toHStream());
+        } else {
+            HList<HDirectory> directories = new ArrayHList<>();
+            HList<HFile> files = new ArrayHList<>();
+            for (File object : directory.listFiles()) {
+                if (object.isDirectory()) {
+                    directories.add(new HDirectory(object.getAbsolutePath()));
+                } else {
+                    files.add(new HFile(object.getAbsolutePath()));
+                }
+            }
+            return DoubleHStreamBuilder.create(HDirectory.class, HFile.class)
+                    .of(directories.toHStream(), files.toHStream());
+        }
     }
 
     public boolean exists() { return this.directory.exists(); }

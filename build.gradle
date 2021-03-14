@@ -40,6 +40,6 @@ dependencies {
 
 shadowJar {
     archiveBaseName.set('hfile')
-    archiveVersion.set('1.1')
+    archiveVersion.set('1.2')
     archiveClassifier.set('')
 }
